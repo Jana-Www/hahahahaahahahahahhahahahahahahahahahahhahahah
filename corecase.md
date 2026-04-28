@@ -73,7 +73,7 @@
 | **AI-оптимизация** | Google OR-Tools CP-SAT | Нативный CP-решатель для задачи с ограничениями; `pip install` |
 | **LLM** | OpenAI GPT-4o-mini | В 10× дешевле GPT-4o, в 2× быстрее; для 3–4 предложений достаточно |
 | **База данных** | PostgreSQL 16 | Надёжность, поддержка UUID, JSON-поля |
-| **Контейнеризация** | Docker Compose | Один `docker-compose up` поднимает весь стек |
+| **Контейнеризация** | Docker Compose | dev: `db` + `backend` в Docker, `frontend` — Vite на хосте; prod: все три сервиса в контейнерах |
 | **Хостинг** | Railway | Деплой из GitHub за 5 минут, PostgreSQL как сервис |
 
 ---
@@ -89,7 +89,7 @@
 │  │ (CSS Grid)│ │(HTML tbl)│ │  (shadcn/ui)     │   │
 │  └───────────┘ └──────────┘ └──────────────────┘   │
 └─────────────────────┬───────────────────────────────┘
-                      │ HTTPS · REST API (JSON)
+                      │ HTTP · REST API (JSON)
                       │ Authorization: Bearer <JWT>
 ┌─────────────────────▼───────────────────────────────┐
 │               FastAPI Application                   │
@@ -115,12 +115,22 @@
 └─────────────────────────────────────────────────────┘
 ```
 
-**Деплой (Docker Compose):**
+**Dev-окружение (текущее):**
+```
+host machine:
+  frontend   → Vite dev server (порт 5173, npm run dev)
+
+Docker Compose:
+  backend    → uvicorn FastAPI --reload (порт 8000)
+  db         → PostgreSQL 16 (порт 5432, named volume)
+```
+
+**Prod-деплой (Docker Compose prod):**
 ```
 services:
   frontend   → nginx (React build, порт 80/443)
-  backend    → uvicorn FastAPI (порт 8000)
-  db         → PostgreSQL 16 (порт 5432, volume)
+  backend    → uvicorn FastAPI 2 workers (порт 8000)
+  db         → PostgreSQL 16 (порт 5432, named volume)
 ```
 
 ---
