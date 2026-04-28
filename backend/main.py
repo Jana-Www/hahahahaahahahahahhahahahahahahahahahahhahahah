@@ -5,7 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import Base, engine
-from app.api.v1 import auth, coverage_rules, season_periods, users, workshops
+from app.api.v1 import (
+    auth, conflicts, coverage_rules, dashboard,
+    schedule, season_periods, users, vacation_blocks, wishes, workshops,
+)
 
 
 @asynccontextmanager
@@ -36,6 +39,11 @@ app.include_router(workshops.router, prefix=PREFIX)
 app.include_router(users.router, prefix=PREFIX)
 app.include_router(season_periods.router, prefix=PREFIX)
 app.include_router(coverage_rules.router, prefix=PREFIX)
+app.include_router(wishes.router, prefix=PREFIX)
+app.include_router(schedule.router, prefix=PREFIX)
+app.include_router(vacation_blocks.router, prefix=PREFIX)
+app.include_router(conflicts.router, prefix=PREFIX)
+app.include_router(dashboard.router, prefix=PREFIX)
 
 
 @app.get("/api/v1/health")
