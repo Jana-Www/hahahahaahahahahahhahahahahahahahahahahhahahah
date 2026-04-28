@@ -68,6 +68,12 @@ export default function ConflictsPage() {
                   <span className="text-xs text-gray-500">{CODE_LABEL[c.code] ?? c.code}</span>
                 </div>
                 <p className="text-sm text-gray-800">{c.description}</p>
+                {c.ai_recommendation && (
+                  <div className="mt-2 flex items-start gap-1.5 text-xs text-blue-800 bg-blue-50 rounded-lg px-3 py-2">
+                    <span className="shrink-0 mt-0.5">🤖</span>
+                    <span>{c.ai_recommendation}</span>
+                  </div>
+                )}
               </div>
               <div className="text-right text-xs text-gray-500 shrink-0">
                 {c.employee_name && <div>{c.employee_name}</div>}

@@ -98,4 +98,5 @@ export interface ConflictItem {
   workshop_name?: string
   date_start?: string
   date_end?: string
+  ai_recommendation?: string
 }

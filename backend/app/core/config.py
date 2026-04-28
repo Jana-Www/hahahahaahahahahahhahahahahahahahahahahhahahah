@@ -8,7 +8,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
     OPENAI_API_KEY: str = ""
-    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+    OPENAI_MODEL: str = "openai/gpt-4o-mini"
 
     ENVIRONMENT: str = "development"
     BACKEND_CORS_ORIGINS: str = "http://localhost:5173"

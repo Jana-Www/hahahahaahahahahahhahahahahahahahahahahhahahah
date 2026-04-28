@@ -245,3 +245,4 @@ class ConflictItem(BaseModel):
     workshop_name: str | None = None
     date_start: date | None = None
     date_end: date | None = None
+    ai_recommendation: str | None = None
