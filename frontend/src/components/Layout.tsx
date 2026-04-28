@@ -29,43 +29,55 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Sidebar */}
-      <aside className="w-56 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-100">
-          <div className="font-bold text-blue-600 text-sm">Vacation Planner</div>
-          <div className="text-xs text-gray-400 mt-0.5">AI-планировщик</div>
+    <div className="min-h-screen flex flex-col">
+      {/* Top header — always visible */}
+      <header className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-10 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-blue-600 text-sm">Vacation Planner</span>
+          <span className="text-gray-300">·</span>
+          <span className="text-xs text-gray-400">AI-планировщик</span>
         </div>
-
-        <nav className="flex-1 p-3 space-y-0.5">
-          {links.map(l => (
-            <Link
-              key={l.to}
-              to={l.to}
-              className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
-                location.pathname === l.to
-                  ? 'bg-blue-50 text-blue-700 font-medium'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="p-3 border-t border-gray-100">
-          <div className="text-xs text-gray-500 truncate px-2 mb-2">{user?.full_name}</div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-500 hidden sm:block">{user?.full_name}</span>
+          <span className="text-xs text-gray-300 hidden sm:block">|</span>
+          <span className="text-xs text-gray-400 hidden sm:block">
+            {manager ? 'Менеджер' : 'Сотрудник'}
+          </span>
           <button
             onClick={handleLogout}
-            className="w-full text-left px-3 py-1.5 text-xs text-gray-500 hover:text-red-600 rounded transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-lg transition-colors"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+            </svg>
             Выйти
           </button>
         </div>
-      </aside>
+      </header>
 
-      {/* Main */}
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className="w-52 bg-white border-r border-gray-200 flex flex-col shrink-0">
+          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+            {links.map(l => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
+                  location.pathname === l.to
+                    ? 'bg-blue-50 text-blue-700 font-medium'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 overflow-auto p-6">{children}</main>
+      </div>
     </div>
   )
 }

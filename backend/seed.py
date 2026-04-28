@@ -5,10 +5,12 @@ Run inside the backend container:
 """
 
 import asyncio
+import os
 import random
-from datetime import date, timedelta
+from datetime import date, datetime
 
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy import select, func
 
 from app.core.config import settings
 from app.core.database import Base
@@ -212,7 +214,110 @@ async def seed():
         print(f"   Coverage rules: {len(workshops) * 3}")
         print(f"   Wish requests: {len(employees)}")
 
+        # Regenerate BD.md
+        await write_bd_md(db, employees, workshops, shifts_all, season_periods)
+
     await engine.dispose()
+
+
+async def write_bd_md(db, employees, workshops, shifts_all, season_periods):
+    """Generate and write BD.md to the project root (/workspace/BD.md)."""
+    today = datetime.now().strftime("%d %B %Y")
+
+    # Build employee rows
+    emp_rows = []
+    for emp in employees:
+        shift = next((s for s in shifts_all if s.id == emp.shift_id), None)
+        ws = next((w for w in workshops if shift and w.id == shift.workshop_id), None)
+        emp_rows.append(
+            f"| {emp.full_name} | `{emp.login}` | EMPLOYEE | {emp.qualification} | "
+            f"{ws.name if ws else '—'} | {shift.name if shift else '—'} |"
+        )
+
+    emp_table = "\n".join(sorted(emp_rows))
+
+    season_map = {"HIGH": "HIGH (высокий) 🔴", "LOW": "LOW (низкий)", "NEUTRAL": "NEUTRAL (нейтральный)"}
+    season_rows = "\n".join(
+        f"| {p.date_start.strftime('%d.%m')} — {p.date_end.strftime('%d.%m')} | {season_map.get(p.status, p.status)} |"
+        for p in sorted(season_periods, key=lambda x: x.date_start)
+    )
+
+    content = f"""# BD.md — Содержимое базы данных
+
+> Актуально на: **{today}**
+> БД: `vacation_planner` (PostgreSQL 16)
+> Обновляется автоматически при запуске `seed.py`.
+
+---
+
+## Учётные данные для входа
+
+| Роль | Логин | Пароль |
+|------|-------|--------|
+| Менеджер | `manager` | `manager123` |
+| Любой сотрудник | см. таблицу ниже | `password123` |
+
+---
+
+## Цеха и смены ({len(workshops)} цехов, {len(shifts_all)} смен)
+
+| Цех | Смены |
+|-----|-------|
+{chr(10).join(f"| {ws.name} | Первая смена, Вторая смена, Третья смена |" for ws in workshops)}
+
+---
+
+## Сотрудники ({len(employees)} чел. + 1 менеджер)
+
+Пароль для всех сотрудников: `password123`
+
+| ФИО | Логин | Роль | Квалификация | Цех | Смена |
+|-----|-------|------|-------------|-----|-------|
+| Менеджер Системный | `manager` | MANAGER | KEY | {workshops[0].name} | {shifts_all[0].name} |
+{emp_table}
+
+> **KEY** — ключевой специалист, **STD** — стандартный сотрудник
+
+---
+
+## Сезонные периоды {YEAR}
+
+| Период | Статус |
+|--------|--------|
+{season_rows}
+
+---
+
+## Нормы покрытия (одинаковы для всех {len(workshops)} цехов)
+
+| Период | Мин. присутствующих | Мин. ключевых | Макс. в отпуске |
+|--------|---------------------|---------------|-----------------|
+| HIGH | 6 | 2 | 2 |
+| NEUTRAL | 4 | 1 | — |
+| LOW | 3 | 1 | — |
+
+---
+
+## Структура таблиц БД
+
+| Таблица | Описание | Записей |
+|---------|----------|---------|
+| `users` | Пользователи (менеджер + сотрудники) | {len(employees) + 1} |
+| `workshops` | Цеха | {len(workshops)} |
+| `shifts` | Смены | {len(shifts_all)} |
+| `season_periods` | Сезонные периоды | {len(season_periods)} |
+| `coverage_rules` | Нормы покрытия | {len(workshops) * 3} |
+| `wish_requests` | Пожелания сотрудников | {len(employees)} |
+| `vacation_blocks` | Отпускные блоки (результат генерации) | генерируется |
+| `generation_jobs` | История запусков генерации | — |
+"""
+
+    # Write to /app/BD.md (backend mount = ./backend on host)
+    # A post-seed script copies it to the project root automatically
+    bd_path = "/app/BD.md"
+    with open(bd_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"   BD.md written to {bd_path}")
 
 
 if __name__ == "__main__":
