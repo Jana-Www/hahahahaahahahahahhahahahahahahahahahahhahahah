@@ -514,3 +514,15 @@ class TestSchedule:
         if r1.status_code == 202:
             r2 = requests.post(f"{BASE}/schedule/generate", params={"year": 2098}, headers=manager_headers)
             assert r2.status_code == 409
+
+    def test_cancel_schedule_no_job(self, manager_headers):
+        r = requests.post(f"{BASE}/schedule/cancel", params={"year": 2199}, headers=manager_headers)
+        assert r.status_code == 404
+
+    def test_cancel_schedule_employee_forbidden(self, employee_headers):
+        r = requests.post(f"{BASE}/schedule/cancel", params={"year": YEAR}, headers=employee_headers)
+        assert r.status_code == 403
+
+    def test_cancel_schedule_unauthorized(self):
+        r = requests.post(f"{BASE}/schedule/cancel", params={"year": YEAR})
+        assert r.status_code == 401

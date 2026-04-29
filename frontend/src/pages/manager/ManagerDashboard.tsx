@@ -27,19 +27,43 @@ export default function ManagerDashboard() {
     },
   })
 
+  const cancel = useMutation({
+    mutationFn: () => api.post(`/schedule/cancel?year=${YEAR}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['schedule-status', YEAR] })
+      qc.invalidateQueries({ queryKey: ['dashboard', YEAR] })
+    },
+  })
+
   const isRunning = job?.status === 'RUNNING'
+  const canCancel = !!job && ['RUNNING', 'DONE', 'FAILED', 'CANCELLED'].includes(job.status)
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-bold text-gray-900">Дашборд {YEAR}</h1>
-        <button
-          className="btn-primary"
-          onClick={() => generate.mutate()}
-          disabled={isRunning || generate.isPending}
-        >
-          {isRunning ? '⏳ Генерация...' : '⚡ Сгенерировать график'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="btn-primary"
+            onClick={() => generate.mutate()}
+            disabled={isRunning || generate.isPending}
+          >
+            {isRunning ? '⏳ Генерация...' : '⚡ Сгенерировать график'}
+          </button>
+          <button
+            type="button"
+            className="btn-secondary border-red-200 text-red-700 hover:bg-red-50"
+            onClick={() => cancel.mutate()}
+            disabled={!canCancel || cancel.isPending || generate.isPending}
+            title={
+              !job
+                ? 'Сначала запустите генерацию'
+                : 'Остановить генерацию или удалить сгенерированный черновик (утверждённые отпуска не затрагиваются)'
+            }
+          >
+            Отменить генерацию
+          </button>
+        </div>
       </div>
 
       {/* Generation status */}
@@ -47,10 +71,12 @@ export default function ManagerDashboard() {
         <div className={`rounded-lg p-4 mb-6 text-sm ${
           job.status === 'RUNNING' ? 'bg-blue-50 text-blue-800' :
           job.status === 'DONE' ? 'bg-green-50 text-green-800' :
+          job.status === 'CANCELLED' ? 'bg-amber-50 text-amber-900' :
           'bg-red-50 text-red-800'
         }`}>
           {job.status === 'RUNNING' && '⏳ Оптимизатор работает — подождите...'}
           {job.status === 'DONE' && '✅ График успешно сгенерирован'}
+          {job.status === 'CANCELLED' && '⚠️ Генерация отменена или черновик графика удалён'}
           {job.status === 'FAILED' && `❌ Ошибка генерации: ${job.error_message}`}
         </div>
       )}

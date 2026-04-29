@@ -9,7 +9,7 @@
 **Промпт 1**
 > Сделай docker compose для нашей архитектуры
 
-*Результат:* Создан `docker-compose.yml` (dev), `docker-compose.prod.yml` (prod), `backend/Dockerfile`, `frontend/Dockerfile` (multi-stage), `frontend/nginx.conf`, `.env.example`, `.gitignore`.
+*Результат:* Создан единый `docker-compose.yml` (PostgreSQL + backend + nginx со сборкой фронта), `backend/Dockerfile`, `frontend/Dockerfile` (multi-stage), `frontend/nginx.conf`, `.env.example`, `.gitignore`.
 
 ---
 

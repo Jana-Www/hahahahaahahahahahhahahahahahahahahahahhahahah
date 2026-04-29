@@ -42,6 +42,7 @@ class JobStatus(str, enum.Enum):
     RUNNING = "RUNNING"
     DONE = "DONE"
     FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
 
 
 # ── Models ───────────────────────────────────────────────────────────────────

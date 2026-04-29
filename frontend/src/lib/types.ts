@@ -2,7 +2,7 @@ export type UserRole = 'EMPLOYEE' | 'MANAGER'
 export type Qualification = 'KEY' | 'STD'
 export type SeasonStatus = 'HIGH' | 'LOW' | 'NEUTRAL'
 export type VacationStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'MODIFIED' | 'CONFLICT'
-export type JobStatus = 'RUNNING' | 'DONE' | 'FAILED'
+export type JobStatus = 'RUNNING' | 'DONE' | 'FAILED' | 'CANCELLED'
 
 export interface User {
   id: string

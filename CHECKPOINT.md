@@ -8,22 +8,27 @@
 
 1. **Docker Desktop** запущен, движок готов.
 2. Если CLI не видит Docker: `docker context use desktop-linux`.
-3. Из корня репозитория: `docker compose up -d`  
-   - После смены Dockerfile/зависимостей: `docker compose up -d --build`.
-4. Приложение: **`http://localhost:5173`**.
+3. Из корня репозитория поднимите **dev** (Vite **5173** + backend с hot reload):  
+   **`docker compose --profile dev up -d`**  
+   либо положите рядом **`.env`** из `.env.example` (в нём уже есть **`COMPOSE_PROFILES=dev`**) и выполните **`docker compose up -d`**.  
+   Приложение: **`http://localhost:5173`**.  
+   После смены Dockerfile/зависимостей: добавьте **`--build`**.
+4. **Прод-сборка** (nginx на **80**): только если активирован профиль **`prod`** — в Dokploy задайте **`COMPOSE_PROFILES=prod`**, локально: **`docker compose --profile prod up -d --build`** → **`http://localhost`**.
 
 ### Важно
 
-- На Windows для hot reload в Vite включён **`server.watch.usePolling`** в `frontend/vite.config.ts` (иначе изменения в контейнере не подхватываются).
-- В **`docker-compose.yml`** у сервиса `db` **убран** проброс `5432:5432` на хост — иначе конфликт с занятым портом в Windows; БД доступна только внутри сети compose (`db:5432`).
-- Свободно на диске желательно **15–20+ ГБ** — при переполнении Docker может «зависать».
+- На Windows для hot reload в Vite включён **`server.watch.usePolling`** в `frontend/vite.config.ts`.
+- Один **`docker-compose.yml`**: профиль **`dev`** — контейнеры **`frontend_dev`** + **`backend_dev`**; профиль **`prod`** — **`frontend`** (nginx) + **`backend`**.
+- Если **`http://localhost:5173/login`** недоступен или «504»: контейнеры не запущены или поднят только **prod** (порт **80**). Запустите команду из п.3 или откройте **`http://localhost`** при профиле prod.
+- Свободно на диске желательно **15–20+ ГБ**.
 
 ---
 
 ## Деплой (Dokploy)
 
-- Код из GitHub; деплой по команде в UI (**Deploy**). Автодеплой при push при включённом autodeploy.
-- **`localhost:5173`** — только локальная разработка; «общая ссылка» — домен/IP сервера и Traefik в Dokploy, не localhost.
+- Один **`docker-compose.yml`**. Для **прода** в переменных окружения приложения укажите **`COMPOSE_PROFILES=prod`** (nginx + статика, **`/api`** на backend).
+- Задайте **`POSTGRES_PASSWORD`** (и при необходимости **`POSTGRES_USER`**).
+- Локально **`5173`** — профиль **`dev`** (см. раздел «Локальный запуск»).
 
 ---
 
