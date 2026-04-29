@@ -101,7 +101,9 @@ export default function EmployeeDashboard() {
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Запланированный отпуск</h2>
             {wishSel ? (
-              <span className="badge bg-slate-100 text-slate-700">По сохранённым пожеланиям</span>
+              <span className="text-xs font-medium text-gray-600 text-right max-w-[16rem] leading-snug">
+                Статус: ожидание согласования менеджером
+              </span>
             ) : block && block.status !== 'APPROVED' ? (
               <span className={`badge ${VACATION_STATUS_COLOR[block.status] ?? 'bg-gray-100 text-gray-700'}`}>
                 {VACATION_STATUS_LABEL[block.status] ?? block.status}
@@ -125,10 +127,6 @@ export default function EmployeeDashboard() {
                   <div className="font-semibold">{wishSel.days}</div>
                 </div>
               </div>
-              <p className="text-xs text-gray-500">
-                Измените даты в разделе «Мои пожелания» и нажмите «Сохранить» — здесь и в балансе отобразятся актуальные значения.
-                После согласования менеджером отпуск будет показан в блоке «Назначенный отпуск».
-              </p>
             </>
           ) : block && block.status !== 'APPROVED' ? (
             <>
