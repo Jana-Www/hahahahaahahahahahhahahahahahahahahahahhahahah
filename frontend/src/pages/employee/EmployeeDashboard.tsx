@@ -6,28 +6,15 @@ import type { User, VacationBlock, WishRequest } from '../../lib/types'
 
 const YEAR = new Date().getFullYear()
 
-function variantDays(start?: string | null, end?: string | null): number {
-  if (!start || !end) return 0
-  const a = new Date(start), b = new Date(end)
-  if (b < a) return 0
-  return daysBetween(start, end)
-}
-
-/** Первый заполненный вариант по приоритету v1 → v2 → v3 */
-function plannedDaysFromWishes(w: WishRequest | undefined): number {
-  if (!w) return 0
-  const d1 = variantDays(w.v1_start, w.v1_end)
-  if (d1 > 0) return d1
-  const d2 = variantDays(w.v2_start, w.v2_end)
-  if (d2 > 0) return d2
-  return variantDays(w.v3_start, w.v3_end)
-}
-
-/** Даты приоритетного варианта для отображения */
-function priorityWishPeriod(w: WishRequest | undefined): { start: string; end: string } | null {
+/** Один источник правды: приоритет v1 → v2 → v3, дни = те же даты что показываем */
+function priorityWishSelection(w: WishRequest | undefined): { start: string; end: string; days: number } | null {
   if (!w) return null
-  const pick = (s?: string | null, e?: string | null) =>
-    s && e && variantDays(s, e) > 0 ? { start: s, end: e } : null
+  const pick = (s?: string | null, e?: string | null) => {
+    if (!s || !e) return null
+    const days = daysBetween(s, e)
+    if (days <= 0) return null
+    return { start: s, end: e, days }
+  }
   return pick(w.v1_start, w.v1_end) ?? pick(w.v2_start, w.v2_end) ?? pick(w.v3_start, w.v3_end)
 }
 
@@ -58,9 +45,9 @@ export default function EmployeeDashboard() {
   const norm            = user.vacation_days_norm
   const used            = user.vacation_days_used
   const plannedBlock    = block ? daysBetween(block.date_start, block.date_end) : 0
-  const planned         = plannedDaysFromWishes(wish)
+  const wishSel         = priorityWishSelection(wish)
+  const planned         = wishSel?.days ?? 0
   const remainder       = Math.max(0, norm - used - planned)
-  const wishPeriod      = priorityWishPeriod(wish)
 
   const hasApprovedBlock = block?.status === 'APPROVED'
 
@@ -117,7 +104,7 @@ export default function EmployeeDashboard() {
               <span className={`badge ${VACATION_STATUS_COLOR[block.status] ?? 'bg-gray-100 text-gray-700'}`}>
                 {VACATION_STATUS_LABEL[block.status] ?? block.status}
               </span>
-            ) : wishPeriod ? (
+            ) : wishSel ? (
               <span className="badge bg-slate-100 text-slate-700">Ожидание графика</span>
             ) : null}
           </div>
@@ -137,31 +124,25 @@ export default function EmployeeDashboard() {
                   <div className="text-xs text-gray-500">Дней</div>
                   <div className="font-semibold">{plannedBlock}</div>
                 </div>
-                {block.wish_variant_used != null && (
-                  <div>
-                    <div className="text-xs text-gray-500">По варианту</div>
-                    <div className="font-semibold">#{block.wish_variant_used}</div>
-                  </div>
-                )}
               </div>
               <p className="text-xs text-gray-500">
                 После согласования менеджером отпуск будет показан в блоке «Назначенный отпуск».
               </p>
             </>
-          ) : wishPeriod ? (
+          ) : wishSel ? (
             <>
               <div className="flex gap-8 mb-4 flex-wrap">
                 <div>
                   <div className="text-xs text-gray-500">Начало</div>
-                  <div className="font-semibold">{formatDate(wishPeriod.start)}</div>
+                  <div className="font-semibold">{formatDate(wishSel.start)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500">Конец</div>
-                  <div className="font-semibold">{formatDate(wishPeriod.end)}</div>
+                  <div className="font-semibold">{formatDate(wishSel.end)}</div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500">Дней</div>
-                  <div className="font-semibold">{planned}</div>
+                  <div className="font-semibold">{wishSel.days}</div>
                 </div>
               </div>
               <p className="text-xs text-gray-500">
@@ -199,12 +180,6 @@ export default function EmployeeDashboard() {
               <div className="text-xs text-gray-500">Дней</div>
               <div className="font-semibold">{plannedBlock}</div>
             </div>
-            {block.wish_variant_used != null && (
-              <div>
-                <div className="text-xs text-gray-500">По варианту</div>
-                <div className="font-semibold">#{block.wish_variant_used}</div>
-              </div>
-            )}
           </div>
 
           {block.ai_explanation && (
