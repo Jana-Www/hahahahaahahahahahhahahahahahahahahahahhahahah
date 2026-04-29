@@ -58,6 +58,9 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+    networks:
+      - default
+      - dokploy-network
     deploy:
       resources:
         limits:
@@ -66,3 +69,7 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  dokploy-network:
+    external: true
