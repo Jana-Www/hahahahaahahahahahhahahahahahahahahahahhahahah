@@ -6,29 +6,26 @@
 
 ## Локальный запуск
 
-1. **Docker Desktop** запущен, движок готов.
+1. **Docker Desktop** запущен.
 2. Если CLI не видит Docker: `docker context use desktop-linux`.
-3. Из корня репозитория поднимите **dev** (Vite **5173** + backend с hot reload):  
-   **`docker compose --profile dev up -d`**  
-   либо положите рядом **`.env`** из `.env.example` (в нём уже есть **`COMPOSE_PROFILES=dev`**) и выполните **`docker compose up -d`**.  
-   Приложение: **`http://localhost:5173`**.  
-   После смены Dockerfile/зависимостей: добавьте **`--build`**.
-4. **Прод-сборка** (nginx на **80**): только если активирован профиль **`prod`** — в Dokploy задайте **`COMPOSE_PROFILES=prod`**, локально: **`docker compose --profile prod up -d --build`** → **`http://localhost`**.
+3. Из корня: **`docker compose --profile dev up -d --build`** — откройте **`http://localhost:5173`**.  
+   Либо **`cp .env.example .env`** и **`docker compose up -d --build`** (в шаблоне уже **`COMPOSE_PROFILES=dev`**).
+
+Демоданные один раз: **`docker compose exec backend python seed.py`**.
 
 ### Важно
 
 - На Windows для hot reload в Vite включён **`server.watch.usePolling`** в `frontend/vite.config.ts`.
-- Один **`docker-compose.yml`**: профиль **`dev`** — контейнеры **`frontend_dev`** + **`backend_dev`**; профиль **`prod`** — **`frontend`** (nginx) + **`backend`**.
-- Если **`http://localhost:5173/login`** недоступен или «504»: контейнеры не запущены или поднят только **prod** (порт **80**). Запустите команду из п.3 или откройте **`http://localhost`** при профиле prod.
-- Свободно на диске желательно **15–20+ ГБ**.
+- Сервисы **`backend`** и **`frontend`** (Vite) идут с профилем **`dev`**. Команда **`docker compose --profile dev up -d`** работает без настройки **`COMPOSE_PROFILES`** в `.env`. Прод — **`backend_prod`** + **`frontend_prod`**, профиль **`prod`**.
+- Если **`5173`** недоступен: выполните **`docker compose ps`** и **`docker compose logs frontend`**.
 
 ---
 
 ## Деплой (Dokploy)
 
-- Один **`docker-compose.yml`**. Для **прода** в переменных окружения приложения укажите **`COMPOSE_PROFILES=prod`** (nginx + статика, **`/api`** на backend).
+- Один **`docker-compose.yml`**. Для прода задайте **`COMPOSE_PROFILES=prod`** — поднимутся **`frontend_prod`** (nginx) и **`backend_prod`**.
 - Задайте **`POSTGRES_PASSWORD`** (и при необходимости **`POSTGRES_USER`**).
-- Локально **`5173`** — профиль **`dev`** (см. раздел «Локальный запуск»).
+- Локально **`5173`** — см. п.3 ( **`--profile dev`** или **`.env` с `COMPOSE_PROFILES=dev`** ).
 
 ---
 

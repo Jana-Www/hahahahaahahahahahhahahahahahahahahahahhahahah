@@ -1,5 +1,5 @@
-# Локально: скопируйте .env.example → .env (там COMPOSE_PROFILES=dev) и выполните docker compose up -d
-# Dokploy / прод: в окружении приложения задайте COMPOSE_PROFILES=prod
+# Локально: скопируйте .env.example → .env (там COMPOSE_PROFILES=dev), затем docker compose up -d
+# Dokploy / прод: COMPOSE_PROFILES=prod
 
 services:
   db:
@@ -22,7 +22,7 @@ services:
           cpus: "0.5"
           memory: 256M
 
-  backend_dev:
+  backend:
     profiles: ["dev"]
     build:
       context: ./backend
@@ -46,28 +46,28 @@ services:
           cpus: "1.0"
           memory: 512M
 
-  frontend_dev:
+  frontend:
     profiles: ["dev"]
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
     restart: unless-stopped
     environment:
-      VITE_PROXY_TARGET: http://backend_dev:8000
+      VITE_PROXY_TARGET: http://backend:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules
     ports:
       - "5173:5173"
     depends_on:
-      - backend_dev
+      - backend
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 512M
 
-  backend:
+  backend_prod:
     profiles: ["prod"]
     build:
       context: ./backend
@@ -82,7 +82,7 @@ services:
         condition: service_healthy
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2
 
-  frontend:
+  frontend_prod:
     profiles: ["prod"]
     build:
       context: ./frontend
@@ -93,7 +93,7 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      - backend_prod
     volumes:
       - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
