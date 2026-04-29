@@ -15,6 +15,14 @@ from app.api.v1 import (
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Auto-seed demo data if the database is empty
+    try:
+        from seed import seed
+        await seed()
+    except Exception as exc:
+        print(f"[seed] warning: {exc}")
+
     yield
 
 

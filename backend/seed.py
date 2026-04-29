@@ -5,7 +5,6 @@ Run inside the backend container:
 """
 
 import asyncio
-import os
 import random
 from datetime import date, datetime
 
@@ -69,6 +68,13 @@ async def seed():
         await conn.run_sync(Base.metadata.create_all)
 
     async with Session() as db:
+        # Idempotency check — skip if data already exists
+        existing = await db.scalar(select(func.count()).select_from(User))
+        if existing > 0:
+            print(f"Database already has {existing} users — skipping seed.")
+            await engine.dispose()
+            return
+
         print("Seeding workshops and shifts...")
         workshops = []
         shifts_all = []
@@ -110,7 +116,6 @@ async def seed():
         for i in range(50):
             fn = random.choice(FIRST_NAMES)
             ln = random.choice(LAST_NAMES)
-            full_name = f"{ln} {fn[0]}."
             base_login = f"{fn.lower()[:4]}{ln.lower()[:4]}{i}"
             login = base_login
             while login in used_logins:
@@ -214,17 +219,15 @@ async def seed():
         print(f"   Coverage rules: {len(workshops) * 3}")
         print(f"   Wish requests: {len(employees)}")
 
-        # Regenerate BD.md
         await write_bd_md(db, employees, workshops, shifts_all, season_periods)
 
     await engine.dispose()
 
 
 async def write_bd_md(db, employees, workshops, shifts_all, season_periods):
-    """Generate and write BD.md to the project root (/workspace/BD.md)."""
+    """Generate and write BD.md to /app/BD.md inside the container."""
     today = datetime.now().strftime("%d %B %Y")
 
-    # Build employee rows
     emp_rows = []
     for emp in employees:
         shift = next((s for s in shifts_all if s.id == emp.shift_id), None)
@@ -312,12 +315,13 @@ async def write_bd_md(db, employees, workshops, shifts_all, season_periods):
 | `generation_jobs` | История запусков генерации | — |
 """
 
-    # Write to /app/BD.md (backend mount = ./backend on host)
-    # A post-seed script copies it to the project root automatically
     bd_path = "/app/BD.md"
-    with open(bd_path, "w", encoding="utf-8") as f:
-        f.write(content)
-    print(f"   BD.md written to {bd_path}")
+    try:
+        with open(bd_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"   BD.md written to {bd_path}")
+    except OSError:
+        pass
 
 
 if __name__ == "__main__":

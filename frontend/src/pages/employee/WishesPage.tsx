@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
-import type { WishRequest, SeasonPeriod } from '../../lib/types'
-import { SEASON_LABEL } from '../../lib/utils'
+import { daysBetween } from '../../lib/utils'
+import type { WishRequest, SeasonPeriod, User } from '../../lib/types'
 
 const YEAR = new Date().getFullYear()
 
@@ -10,6 +10,13 @@ interface WishVariant {
   start: string
   end: string
   comment: string
+}
+
+function countDays(start: string, end: string): number {
+  if (!start || !end) return 0
+  const a = new Date(start), b = new Date(end)
+  if (b < a) return 0
+  return daysBetween(start, end)
 }
 
 function seasonWarning(start: string, end: string, periods: SeasonPeriod[]): string | null {
@@ -35,6 +42,13 @@ export default function WishesPage() {
   const { data: periods = [] } = useQuery<SeasonPeriod[]>({
     queryKey: ['season-periods', YEAR],
     queryFn: () => api.get(`/season-periods?year=${YEAR}`).then(r => r.data),
+  })
+
+  // Fetch fresh user profile so balance is always up-to-date
+  const { data: user } = useQuery<User>({
+    queryKey: ['me'],
+    queryFn: () => api.get('/users/me').then(r => r.data),
+    staleTime: 60_000,
   })
 
   const [variants, setVariants] = useState<WishVariant[]>([
@@ -80,6 +94,7 @@ export default function WishesPage() {
   }
 
   const isLocked = wish?.is_locked ?? false
+  const available = user ? user.vacation_days_norm - user.vacation_days_used : null
 
   return (
     <div className="max-w-2xl">
@@ -90,6 +105,31 @@ export default function WishesPage() {
         )}
       </div>
 
+      {/* Balance banner */}
+      {available !== null && (
+        <div className="card p-4 mb-6 flex items-center gap-4">
+          <div className="text-center min-w-[56px]">
+            <div className="text-2xl font-bold text-gray-900">{user!.vacation_days_norm}</div>
+            <div className="text-xs text-gray-500">Норма</div>
+          </div>
+          <div className="text-gray-300 text-xl">—</div>
+          <div className="text-center min-w-[56px]">
+            <div className="text-2xl font-bold text-gray-500">{user!.vacation_days_used}</div>
+            <div className="text-xs text-gray-500">Использовано</div>
+          </div>
+          <div className="text-gray-300 text-xl">=</div>
+          <div className="text-center min-w-[56px]">
+            <div className={`text-2xl font-bold ${available < 14 ? 'text-red-600' : 'text-green-600'}`}>
+              {available}
+            </div>
+            <div className="text-xs text-gray-500">Доступно</div>
+          </div>
+          <div className="ml-auto text-xs text-gray-400">
+            Каждый вариант должен укладываться в {available} дн.
+          </div>
+        </div>
+      )}
+
       {isLocked && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-sm text-yellow-800">
           Пожелания заблокированы — генерация графика уже запущена. Для изменений обратитесь к менеджеру.
@@ -99,15 +139,28 @@ export default function WishesPage() {
       <div className="space-y-4">
         {variants.map((v, i) => {
           const warn = seasonWarning(v.start, v.end, periods)
+          const days = countDays(v.start, v.end)
+          const overLimit = available !== null && days > available
           return (
             <div key={i} className="card p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">
-                  {i + 1}
-                </span>
-                <span className="font-medium text-gray-700">
-                  Вариант {i + 1} {i === 0 ? '(приоритетный)' : '(необязательный)'}
-                </span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                  <span className="font-medium text-gray-700">
+                    Вариант {i + 1} {i === 0 ? '(приоритетный)' : '(необязательный)'}
+                  </span>
+                </div>
+                {days > 0 && (
+                  <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${
+                    overLimit
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {days} дн.
+                  </span>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-3">
@@ -133,8 +186,14 @@ export default function WishesPage() {
                 </div>
               </div>
 
-              {warn && (
-                <div className="bg-red-50 text-red-700 rounded px-3 py-2 text-xs mb-3">{warn}</div>
+              {overLimit && (
+                <div className="bg-red-50 text-red-700 rounded px-3 py-2 text-xs mb-3">
+                  Превышен лимит: {days} дн. при доступных {available} дн.
+                </div>
+              )}
+
+              {warn && !overLimit && (
+                <div className="bg-yellow-50 text-yellow-700 rounded px-3 py-2 text-xs mb-3">{warn}</div>
               )}
 
               <div>
@@ -155,7 +214,7 @@ export default function WishesPage() {
       </div>
 
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
-      {saved && <p className="text-sm text-green-600 mt-3">Пожелания сохранены!</p>}
+      {saved && <p className="text-sm text-green-600 mt-3">✓ Пожелания сохранены в базе данных</p>}
 
       {!isLocked && (
         <button

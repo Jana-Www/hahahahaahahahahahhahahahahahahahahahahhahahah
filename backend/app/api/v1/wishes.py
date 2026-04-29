@@ -66,15 +66,19 @@ async def save_my_wishes(
     if wish.is_locked:
         raise HTTPException(403, "Пожелания заблокированы: генерация уже запущена")
 
-    # Validate days balance
-    total_requested = (
-        _days(body.v1_start, body.v1_end)
-        + _days(body.v2_start, body.v2_end)
-        + _days(body.v3_start, body.v3_end)
-    )
+    # Варианты — альтернативные (выбирается один), поэтому каждый проверяем отдельно
     available = current_user.vacation_days_norm - current_user.vacation_days_used
-    if total_requested > available:
-        raise HTTPException(400, f"Запрошено {total_requested} дн., доступно {available} дн.")
+    for var_start, var_end, label in [
+        (body.v1_start, body.v1_end, "Вариант 1"),
+        (body.v2_start, body.v2_end, "Вариант 2"),
+        (body.v3_start, body.v3_end, "Вариант 3"),
+    ]:
+        days = _days(var_start, var_end)
+        if days > 0 and days > available:
+            raise HTTPException(
+                400,
+                f"{label}: запрошено {days} дн., доступно {available} дн."
+            )
 
     for k, v in body.model_dump(exclude_unset=True).items():
         setattr(wish, k, v)

@@ -2,34 +2,46 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import { getUser } from '../../lib/auth'
 import { formatDate, daysBetween, VACATION_STATUS_LABEL, VACATION_STATUS_COLOR } from '../../lib/utils'
-import type { VacationBlock } from '../../lib/types'
+import type { User, VacationBlock } from '../../lib/types'
 
 const YEAR = new Date().getFullYear()
 
 export default function EmployeeDashboard() {
-  const user = getUser()!
+  const fallbackUser = getUser()!
+
+  const { data: freshUser } = useQuery<User>({
+    queryKey: ['me'],
+    queryFn: () => api.get('/users/me').then(r => r.data),
+    staleTime: 60_000,
+  })
+
+  const user = freshUser ?? fallbackUser
 
   const { data: block } = useQuery<VacationBlock | null>({
     queryKey: ['my-block', YEAR],
     queryFn: () => api.get(`/vacation-blocks/my?year=${YEAR}`).then(r => r.data),
   })
 
-  const available = user.vacation_days_norm - user.vacation_days_used
-  const planned = block ? daysBetween(block.date_start, block.date_end) : 0
+  const norm        = user.vacation_days_norm
+  const used        = user.vacation_days_used          // уже отгулянные дни (прошедший отпуск)
+  const planned     = block ? daysBetween(block.date_start, block.date_end) : 0
+  const rawRemainder = norm - used - planned
+  const remainder   = Math.max(0, rawRemainder)        // никогда не отрицательный
+  const isOverBudget = rawRemainder < 0
 
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Мой отпуск {YEAR}</h1>
 
-      {/* Balance */}
+      {/* ── Баланс дней ───────────────────────────────────────── */}
       <div className="card p-5 mb-6">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Баланс дней</h2>
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: 'Норма', value: user.vacation_days_norm, color: 'text-gray-900' },
-            { label: 'Использовано', value: user.vacation_days_used, color: 'text-gray-600' },
-            { label: 'Запланировано', value: planned, color: 'text-blue-600' },
-            { label: 'Остаток', value: available - planned, color: available - planned < 0 ? 'text-red-600' : 'text-green-600' },
+            { label: 'Норма',         value: norm,      color: 'text-gray-900' },
+            { label: 'Использовано',  value: used,      color: 'text-gray-500' },
+            { label: 'Запланировано', value: planned,   color: 'text-blue-600' },
+            { label: 'Остаток',       value: remainder, color: remainder === 0 ? 'text-yellow-600' : 'text-green-600' },
           ].map(s => (
             <div key={s.label} className="text-center">
               <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
@@ -37,9 +49,37 @@ export default function EmployeeDashboard() {
             </div>
           ))}
         </div>
+
+        {isOverBudget && (
+          <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 text-xs text-orange-700">
+            Сумма использованных и запланированных дней превышает норму на {Math.abs(rawRemainder)} дн. — уточните у менеджера.
+          </div>
+        )}
       </div>
 
-      {/* Vacation block */}
+      {/* ── Прошедший отпуск ──────────────────────────────────── */}
+      {used > 0 ? (
+        <div className="card p-5 mb-6">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Прошедший отпуск</h2>
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+              <span className="text-lg font-bold text-gray-600">{used}</span>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-800">{used} дней уже использовано</div>
+              <div className="text-xs text-gray-500 mt-0.5">
+                Дни отпуска, взятые в предыдущих периодах и учтённые в балансе
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="card p-5 mb-6 text-sm text-gray-400 text-center">
+          Нет данных о прошедших отпусках
+        </div>
+      )}
+
+      {/* ── Назначенный отпуск ────────────────────────────────── */}
       {block ? (
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
@@ -64,7 +104,7 @@ export default function EmployeeDashboard() {
             </div>
             {block.wish_variant_used && (
               <div>
-                <div className="text-xs text-gray-500">Вариант</div>
+                <div className="text-xs text-gray-500">По варианту</div>
                 <div className="font-semibold">#{block.wish_variant_used}</div>
               </div>
             )}

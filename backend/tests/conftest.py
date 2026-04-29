@@ -67,8 +67,14 @@ def first_workshop(manager_headers):
 
 
 @pytest.fixture(scope="session")
-def first_shift(first_workshop):
-    return first_workshop["shifts"][0]
+def first_shift(manager_headers):
+    """Return the first shift from any workshop that has shifts."""
+    import requests
+    workshops = requests.get(f"{BASE}/workshops", headers=manager_headers).json()
+    for ws in workshops:
+        if ws.get("shifts"):
+            return ws["shifts"][0]
+    pytest.skip("No workshop with shifts found in DB")
 
 
 @pytest.fixture(scope="session")
