@@ -61,6 +61,11 @@ services:
     networks:
       - default
       - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vacation-frontend.rule=Host(`166.246.0.33.nip.io`)"
+      - "traefik.http.routers.vacation-frontend.entrypoints=web"
+      - "traefik.http.services.vacation-frontend.loadbalancer.server.port=5173"
     deploy:
       resources:
         limits:
