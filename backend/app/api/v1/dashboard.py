@@ -30,10 +30,10 @@ async def get_dashboard(
 
     return DashboardStats(
         total_employees=total,
-        approved=status_counts.get(VacationStatus.APPROVED, 0),
-        pending=status_counts.get(VacationStatus.PENDING, 0),
-        draft=status_counts.get(VacationStatus.DRAFT, 0),
-        conflict=status_counts.get(VacationStatus.CONFLICT, 0),
-        modified=status_counts.get(VacationStatus.MODIFIED, 0),
+        approved=status_counts.get(VacationStatus.APPROVED.value, 0),
+        pending=status_counts.get(VacationStatus.PENDING.value, 0),
+        draft=status_counts.get(VacationStatus.DRAFT.value, 0),
+        conflict=status_counts.get(VacationStatus.CONFLICT.value, 0),
+        modified=status_counts.get(VacationStatus.MODIFIED.value, 0),
         without_wishes=max(0, total - wishes_count),
     )

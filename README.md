@@ -24,11 +24,8 @@ cd hahahahaahahahahahhahahahahahahahahahahhahahah
 cp .env.example .env
 # Заполнить OPENAI_API_KEY в .env
 
-# 3. Запустить всё — любой из вариантов:
-#    docker compose --profile dev up -d --build
-#    (или, если уже есть .env из шага 2 с COMPOSE_PROFILES=dev): docker compose up -d --build
-
-docker compose --profile dev up -d --build
+# 3. Запустить всё
+docker compose up -d --build
 
 # 4. Загрузить демо-данные (один раз)
 docker compose exec backend python seed.py
@@ -36,11 +33,9 @@ docker compose exec backend python seed.py
 
 Приложение: **`http://localhost:5173`**.
 
-**Без `.env`:** используйте **`docker compose --profile dev up -d --build`** — профиль поднимает **backend** и **frontend** (Vite).
+**Только БД + backend, фронт на хосте:** `docker compose up -d db backend`, затем в `frontend`: `npm install` и `npm run dev`.
 
-**Только БД + backend, фронт на хосте:** `docker compose --profile dev up -d db backend`, затем в `frontend`: `npm install` и `npm run dev`.
-
-**Прод (nginx :80):** в Dokploy задайте **`COMPOSE_PROFILES=prod`**, локально: **`docker compose --profile prod up -d --build`** → **`http://localhost`**.
+**Прод (Dokploy):** в проекте укажите файл **`docker-compose.deploy.yml`**, затем Deploy → **`http://localhost`** (или домен) на порту **80** контейнера.
 
 ## Учётные записи (демо)
 
@@ -54,19 +49,17 @@ docker compose exec backend python seed.py
 ## Архитектура
 
 ```
-Docker (по умолчанию): frontend/Vite (:5173) → прокси /api → backend (:8000) → PostgreSQL
-Профиль prod:           nginx (:80) → /api → backend_prod → PostgreSQL
-npm run dev на хосте:   Vite (:5173) → 127.0.0.1:8000 → контейнер backend
-                                  │
-                           OR-Tools CP-SAT
-                           OpenAI GPT-4o-mini
+Локально (docker-compose.yml):  Vite (:5173) → прокси /api → backend (:8000) → PostgreSQL
+Прод (docker-compose.deploy.yml): nginx (:80) → /api → backend → PostgreSQL
+npm run dev на хосте:            Vite (:5173) → 127.0.0.1:8000 → контейнер backend
+                                            │
+                                     OR-Tools CP-SAT
+                                     OpenAI GPT-4o-mini
 ```
 
-**Docker Compose:** один файл. **`docker compose --profile dev up -d`** или **`cp .env.example .env`** и **`docker compose up -d`** — оба поднимают **5173**. Прод: **`COMPOSE_PROFILES=prod`** или **`docker compose --profile prod up -d`**.
+**Локально:** **`docker compose up -d --build`** → **`http://localhost:5173`**.
 
-**Локально:** **`docker compose --profile dev up -d --build`** → **`http://localhost:5173`** (не нужно править `.env` ради профиля).
-
-**Прод:** **`COMPOSE_PROFILES=prod`** или **`docker compose --profile prod up -d --build`** → **`http://localhost`**.
+**Прод / Dokploy:** файл **`docker-compose.deploy.yml`** (nginx + сборка фронта).
 
 ## Ключевые функции
 
@@ -119,7 +112,8 @@ GET  /api/v1/dashboard?year=2026
 │       ├── pages/        — страницы (Login, Employee, Manager)
 │       ├── components/   — Layout, ProtectedRoute
 │       └── lib/          — api, auth, types, utils
-├── docker-compose.yml    — по умолчанию dev (:5173); профиль prod → nginx (:80)
+├── docker-compose.yml         — локально: db + backend + Vite (:5173)
+├── docker-compose.deploy.yml — Dokploy/прод: nginx (:80) + backend
 ├── .env.example
 ├── corecase.md
 ├── URS.md

@@ -302,6 +302,7 @@ vacation-planner/
 │   └── vite.config.ts
 ├── skills/               — AI-скилы и вспомогательные промпт-шаблоны
 ├── docker-compose.yml
+├── docker-compose.deploy.yml
 ├── .env                  — переменные окружения (не коммитится в git)
 ├── .env.example          — шаблон .env для онбординга (коммитится)
 ├── corecase.md           — исходный кейс, стек, архитектура, схема БД

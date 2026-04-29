@@ -8,24 +8,21 @@
 
 1. **Docker Desktop** запущен.
 2. Если CLI не видит Docker: `docker context use desktop-linux`.
-3. Из корня: **`docker compose --profile dev up -d --build`** — откройте **`http://localhost:5173`**.  
-   Либо **`cp .env.example .env`** и **`docker compose up -d --build`** (в шаблоне уже **`COMPOSE_PROFILES=dev`**).
-
-Демоданные один раз: **`docker compose exec backend python seed.py`**.
+3. **`cp .env.example .env`**, заполнить секреты (например **OPENAI_API_KEY**).
+4. Из корня: **`docker compose up -d --build`** → **`http://localhost:5173`**.
+5. Демоданные один раз: **`docker compose exec backend python seed.py`**.
 
 ### Важно
 
 - На Windows для hot reload в Vite включён **`server.watch.usePolling`** в `frontend/vite.config.ts`.
-- Сервисы **`backend`** и **`frontend`** (Vite) идут с профилем **`dev`**. Команда **`docker compose --profile dev up -d`** работает без настройки **`COMPOSE_PROFILES`** в `.env`. Прод — **`backend_prod`** + **`frontend_prod`**, профиль **`prod`**.
-- Если **`5173`** недоступен: выполните **`docker compose ps`** и **`docker compose logs frontend`**.
+- **`docker-compose.yml`** — только локальная связка **db + backend + frontend** (Vite **5173**). Никаких профилей и **`COMPOSE_PROFILES`** не нужно.
 
 ---
 
 ## Деплой (Dokploy)
 
-- Один **`docker-compose.yml`**. Для прода задайте **`COMPOSE_PROFILES=prod`** — поднимутся **`frontend_prod`** (nginx) и **`backend_prod`**.
-- Задайте **`POSTGRES_PASSWORD`** (и при необходимости **`POSTGRES_USER`**).
-- Локально **`5173`** — см. п.3 ( **`--profile dev`** или **`.env` с `COMPOSE_PROFILES=dev`** ).
+- В настройках приложения укажите compose-файл **`docker-compose.deploy.yml`** (прод: nginx **80**, **`/api`** → **backend**).
+- Задайте **`POSTGRES_PASSWORD`** и секреты в **`.env`** на сервере.
 
 ---
 
