@@ -13,5 +13,10 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    // Docker Desktop + bind mount на Windows: без polling Vite не видит сохранённые файлы
+    watch: {
+      usePolling: true,
+      interval: 300,
+    },
   },
 })
