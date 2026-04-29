@@ -73,6 +73,7 @@ export default function WishesPage() {
     mutationFn: (body: object) => api.put(`/wishes/my?year=${YEAR}`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['my-wishes', YEAR] })
+      qc.invalidateQueries({ queryKey: ['me'] })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     },
@@ -107,26 +108,32 @@ export default function WishesPage() {
 
       {/* Balance banner */}
       {available !== null && (
-        <div className="card p-4 mb-6 flex items-center gap-4">
-          <div className="text-center min-w-[56px]">
-            <div className="text-2xl font-bold text-gray-900">{user!.vacation_days_norm}</div>
-            <div className="text-xs text-gray-500">Норма</div>
-          </div>
-          <div className="text-gray-300 text-xl">—</div>
-          <div className="text-center min-w-[56px]">
-            <div className="text-2xl font-bold text-gray-500">{user!.vacation_days_used}</div>
-            <div className="text-xs text-gray-500">Использовано</div>
-          </div>
-          <div className="text-gray-300 text-xl">=</div>
-          <div className="text-center min-w-[56px]">
-            <div className={`text-2xl font-bold ${available < 14 ? 'text-red-600' : 'text-green-600'}`}>
-              {available}
+        <div className="card p-4 mb-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="text-center min-w-[56px]">
+              <div className="text-2xl font-bold text-gray-900">{user!.vacation_days_norm}</div>
+              <div className="text-xs text-gray-500">Норма</div>
             </div>
-            <div className="text-xs text-gray-500">Доступно</div>
+            <div className="text-gray-300 text-xl">—</div>
+            <div className="text-center min-w-[56px]">
+              <div className="text-2xl font-bold text-gray-500">{user!.vacation_days_used}</div>
+              <div className="text-xs text-gray-500">Использовано</div>
+            </div>
+            <div className="text-gray-300 text-xl">=</div>
+            <div className="text-center min-w-[56px]">
+              <div className={`text-2xl font-bold ${available <= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                {available}
+              </div>
+              <div className="text-xs text-gray-500">Доступно на этот год</div>
+            </div>
           </div>
-          <div className="ml-auto text-xs text-gray-400">
-            Каждый вариант должен укладываться в {available} дн.
-          </div>
+          <p className="mt-3 text-xs text-gray-500 leading-relaxed">
+            Три варианта даты — это <strong className="font-medium text-gray-700">альтернативы</strong>: в итоге согласуют{' '}
+            <strong className="font-medium text-gray-700">один</strong> период (вариант 1 — самый приоритетный), с учётом графика
+            и покрытия смен. Длина <strong className="font-medium text-gray-700">каждого</strong> варианта не может быть больше{' '}
+            <strong className="font-medium text-gray-700">{available}</strong>&nbsp;дн. — это остаток дней отпуска в системе, а не
+            отдельное ограничение закона.
+          </p>
         </div>
       )}
 
@@ -149,7 +156,7 @@ export default function WishesPage() {
                     {i + 1}
                   </span>
                   <span className="font-medium text-gray-700">
-                    Вариант {i + 1} {i === 0 ? '(приоритетный)' : '(необязательный)'}
+                    Вариант {i + 1}{i === 0 ? ' — приоритетный' : ' — альтернатива'}
                   </span>
                 </div>
                 {days > 0 && (
@@ -186,9 +193,9 @@ export default function WishesPage() {
                 </div>
               </div>
 
-              {overLimit && (
-                <div className="bg-red-50 text-red-700 rounded px-3 py-2 text-xs mb-3">
-                  Превышен лимит: {days} дн. при доступных {available} дн.
+              {overLimit && available !== null && (
+                <div className="mt-3 mb-3 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 text-xs text-orange-700">
+                  Этот вариант длиннее доступного остатка ({available} дн.) на год — укоротите период или уточните у менеджера.
                 </div>
               )}
 

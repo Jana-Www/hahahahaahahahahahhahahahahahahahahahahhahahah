@@ -6,7 +6,26 @@ import type { User, VacationBlock, WishRequest } from '../../lib/types'
 
 const YEAR = new Date().getFullYear()
 
-/** Один источник правды: приоритет v1 → v2 → v3, дни = те же даты что показываем */
+type WishVariantRow = { variant: 1 | 2 | 3; start: string; end: string; days: number }
+
+/** Все заполненные варианты (для таблицы «Запланированный отпуск») */
+function filledWishVariants(w: WishRequest | undefined): WishVariantRow[] {
+  if (!w) return []
+  const add = (variant: 1 | 2 | 3, s?: string | null, e?: string | null): WishVariantRow | null => {
+    if (!s || !e) return null
+    const days = daysBetween(s, e)
+    if (days <= 0) return null
+    return { variant, start: s, end: e, days }
+  }
+  const rows = [
+    add(1, w.v1_start, w.v1_end),
+    add(2, w.v2_start, w.v2_end),
+    add(3, w.v3_start, w.v3_end),
+  ].filter(Boolean) as WishVariantRow[]
+  return rows
+}
+
+/** Один источник правды для баланса «Запланировано»: приоритет v1 → v2 → v3 */
 function priorityWishSelection(w: WishRequest | undefined): { start: string; end: string; days: number } | null {
   if (!w) return null
   const pick = (s?: string | null, e?: string | null) => {
@@ -45,6 +64,7 @@ export default function EmployeeDashboard() {
   const norm            = user.vacation_days_norm
   const used            = user.vacation_days_used
   const plannedBlock    = block ? daysBetween(block.date_start, block.date_end) : 0
+  const wishRows        = filledWishVariants(wish)
   const wishSel         = priorityWishSelection(wish)
   const planned         = wishSel?.days ?? 0
   const remainder       = Math.max(0, norm - used - planned)
@@ -100,7 +120,7 @@ export default function EmployeeDashboard() {
         <div className="card p-5 mb-6">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Запланированный отпуск</h2>
-            {wishSel ? (
+            {wishRows.length > 0 ? (
               <span className="text-xs font-medium text-gray-600 text-right max-w-[16rem] leading-snug">
                 Статус: ожидание согласования менеджером
               </span>
@@ -111,22 +131,39 @@ export default function EmployeeDashboard() {
             ) : null}
           </div>
 
-          {wishSel ? (
+          {wishRows.length > 0 ? (
             <>
-              <div className="flex gap-8 mb-4 flex-wrap">
-                <div>
-                  <div className="text-xs text-gray-500">Начало</div>
-                  <div className="font-semibold">{formatDate(wishSel.start)}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500">Конец</div>
-                  <div className="font-semibold">{formatDate(wishSel.end)}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500">Дней</div>
-                  <div className="font-semibold">{wishSel.days}</div>
-                </div>
+              <div className="overflow-x-auto mb-3">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="text-left text-xs text-gray-500 border-b border-gray-200">
+                      <th className="pb-2 pr-4 font-medium">Вариант</th>
+                      <th className="pb-2 pr-4 font-medium">Начало</th>
+                      <th className="pb-2 pr-4 font-medium">Конец</th>
+                      <th className="pb-2 font-medium">Дней</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {wishRows.map(row => (
+                      <tr key={row.variant} className="border-b border-gray-100 last:border-0">
+                        <td className="py-2 pr-4 font-medium text-gray-800">
+                          {row.variant}
+                          {row.variant === 1 ? (
+                            <span className="text-xs font-normal text-gray-500 ml-1">(приоритет)</span>
+                          ) : null}
+                        </td>
+                        <td className="py-2 pr-4">{formatDate(row.start)}</td>
+                        <td className="py-2 pr-4">{formatDate(row.end)}</td>
+                        <td className="py-2 font-semibold">{row.days}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Согласуют один из вариантов с учётом графика и покрытия смен. В блоке «Баланс дней» выше строка «Запланировано»
+                считается по приоритетному варианту&nbsp;1 (если он заполнен).
+              </p>
             </>
           ) : block && block.status !== 'APPROVED' ? (
             <>
