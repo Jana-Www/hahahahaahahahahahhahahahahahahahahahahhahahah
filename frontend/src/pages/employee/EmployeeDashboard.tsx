@@ -2,9 +2,26 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import { getUser } from '../../lib/auth'
 import { formatDate, daysBetween, VACATION_STATUS_LABEL, VACATION_STATUS_COLOR } from '../../lib/utils'
-import type { User, VacationBlock } from '../../lib/types'
+import type { User, VacationBlock, WishRequest } from '../../lib/types'
 
 const YEAR = new Date().getFullYear()
+
+function variantDays(start?: string | null, end?: string | null): number {
+  if (!start || !end) return 0
+  const a = new Date(start), b = new Date(end)
+  if (b < a) return 0
+  return daysBetween(start, end)
+}
+
+/** Первый заполненный вариант по приоритету v1 → v2 → v3 */
+function plannedDaysFromWishes(w: WishRequest | undefined): number {
+  if (!w) return 0
+  const d1 = variantDays(w.v1_start, w.v1_end)
+  if (d1 > 0) return d1
+  const d2 = variantDays(w.v2_start, w.v2_end)
+  if (d2 > 0) return d2
+  return variantDays(w.v3_start, w.v3_end)
+}
 
 export default function EmployeeDashboard() {
   const fallbackUser = getUser()!
@@ -22,12 +39,26 @@ export default function EmployeeDashboard() {
     queryFn: () => api.get(`/vacation-blocks/my?year=${YEAR}`).then(r => r.data),
   })
 
+  const { data: wish } = useQuery<WishRequest>({
+    queryKey: ['my-wishes', YEAR],
+    queryFn: () => api.get(`/wishes/my?year=${YEAR}`).then(r => r.data),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  })
+
   const norm        = user.vacation_days_norm
   const used        = user.vacation_days_used          // уже отгулянные дни (прошедший отпуск)
-  const planned     = block ? daysBetween(block.date_start, block.date_end) : 0
-  const rawRemainder = norm - used - planned
-  const remainder   = Math.max(0, rawRemainder)        // никогда не отрицательный
-  const isOverBudget = rawRemainder < 0
+  /** Дни по утверждённому графику — только в карточке «Назначенный отпуск», не в верхнем балансе */
+  const plannedBlock = block ? daysBetween(block.date_start, block.date_end) : 0
+  /** Баланс «Запланировано»: только то, что сотрудник указал в «Мои пожелания» (вариант 1 → 2 → 3) */
+  const planned      = plannedDaysFromWishes(wish)
+  const remainder    = Math.max(0, norm - used - planned)
+
+  const plannedLabel =
+    planned > 0
+      ? 'Запланировано по приоритетному варианту из раздела «Мои пожелания»'
+      : null
 
   return (
     <div className="max-w-2xl">
@@ -49,11 +80,8 @@ export default function EmployeeDashboard() {
             </div>
           ))}
         </div>
-
-        {isOverBudget && (
-          <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 text-xs text-orange-700">
-            Сумма использованных и запланированных дней превышает норму на {Math.abs(rawRemainder)} дн. — уточните у менеджера.
-          </div>
+        {plannedLabel && (
+          <p className="mt-3 text-xs text-gray-500 text-center">{plannedLabel}</p>
         )}
       </div>
 
@@ -100,7 +128,7 @@ export default function EmployeeDashboard() {
             </div>
             <div>
               <div className="text-xs text-gray-500">Дней</div>
-              <div className="font-semibold">{planned}</div>
+              <div className="font-semibold">{plannedBlock}</div>
             </div>
             {block.wish_variant_used && (
               <div>
