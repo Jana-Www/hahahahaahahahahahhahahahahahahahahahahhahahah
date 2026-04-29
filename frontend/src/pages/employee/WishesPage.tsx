@@ -127,13 +127,6 @@ export default function WishesPage() {
               <div className="text-xs text-gray-500">Доступно на этот год</div>
             </div>
           </div>
-          <p className="mt-3 text-xs text-gray-500 leading-relaxed">
-            Три варианта даты — это <strong className="font-medium text-gray-700">альтернативы</strong>: в итоге согласуют{' '}
-            <strong className="font-medium text-gray-700">один</strong> период (вариант 1 — самый приоритетный), с учётом графика
-            и покрытия смен. Длина <strong className="font-medium text-gray-700">каждого</strong> варианта не может быть больше{' '}
-            <strong className="font-medium text-gray-700">{available}</strong>&nbsp;дн. — это остаток дней отпуска в системе, а не
-            отдельное ограничение закона.
-          </p>
         </div>
       )}
 
