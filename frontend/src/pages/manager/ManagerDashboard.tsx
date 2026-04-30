@@ -39,15 +39,15 @@ export default function ManagerDashboard() {
   const canCancel = !!job && ['RUNNING', 'DONE', 'FAILED', 'CANCELLED'].includes(job.status)
 
   return (
-    <div>
+    <div className="text-slate-100">
       <div className="mb-6">
         <div className="text-center mb-4">
-          <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 mb-2">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#2f3438] border border-[#4a5258] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#cbd5df] mb-2">
             <span>Manager view</span>
             <span>•</span>
             <span>{YEAR}</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-sky-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-[#5db3be] via-[#e09a18] to-[#d64a35] bg-clip-text text-transparent drop-shadow-sm">
             Дашборд {YEAR}
           </h1>
         </div>
@@ -61,7 +61,7 @@ export default function ManagerDashboard() {
           </button>
           <button
             type="button"
-            className="btn-secondary border-red-200 text-red-700 hover:bg-red-50"
+            className="btn-secondary border-[#9f3e37] text-[#f6b5ac] hover:bg-[#4a2a2a]"
             onClick={() => cancel.mutate()}
             disabled={!canCancel || cancel.isPending || generate.isPending}
             title={
@@ -78,10 +78,10 @@ export default function ManagerDashboard() {
       {/* Generation status */}
       {job && (
         <div className={`rounded-lg p-4 mb-6 text-sm ${
-          job.status === 'RUNNING' ? 'bg-blue-50 text-blue-800' :
-          job.status === 'DONE' ? 'bg-green-50 text-green-800' :
-          job.status === 'CANCELLED' ? 'bg-amber-50 text-amber-900' :
-          'bg-red-50 text-red-800'
+          job.status === 'RUNNING' ? 'bg-[#254d5a] text-[#b9eaf6]' :
+          job.status === 'DONE' ? 'bg-[#335543] text-[#cbf4da]' :
+          job.status === 'CANCELLED' ? 'bg-[#5c4a2f] text-[#ffe3b0]' :
+          'bg-[#5b3136] text-[#ffd2d6]'
         }`}>
           {job.status === 'RUNNING' && '⏳ Оптимизатор работает — подождите...'}
           {job.status === 'DONE' && '✅ График успешно сгенерирован'}
@@ -95,41 +95,41 @@ export default function ManagerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
           <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {[
-              { label: 'Всего сотрудников', value: stats.total_employees, color: 'text-gray-900' },
-              { label: 'Без пожеланий', value: stats.without_wishes, color: 'text-gray-400' },
-              { label: 'Изменено менеджером', value: stats.modified, color: 'text-orange-600' },
-              { label: 'Утверждено', value: stats.approved, color: 'text-green-600' },
-              { label: 'Конфликты', value: stats.conflict, color: 'text-red-600' },
-              { label: 'Черновики (AI)', value: stats.draft, color: 'text-blue-600' },
+              { label: 'Всего сотрудников', value: stats.total_employees, color: 'text-[#d7f2f7]', bg: 'bg-[#4fa5b3]', labelColor: 'text-[#ddf6fa]' },
+              { label: 'Без пожеланий', value: stats.without_wishes, color: 'text-[#f9e9bb]', bg: 'bg-[#4a4f55]', labelColor: 'text-[#ccd3da]' },
+              { label: 'Изменено менеджером', value: stats.modified, color: 'text-[#ffe6b5]', bg: 'bg-[#d89013]', labelColor: 'text-[#fff3db]' },
+              { label: 'Утверждено', value: stats.approved, color: 'text-[#d4f7da]', bg: 'bg-[#6e9f2f]', labelColor: 'text-[#e9ffd9]' },
+              { label: 'Конфликты', value: stats.conflict, color: 'text-[#ffd8cd]', bg: 'bg-[#d54a34]', labelColor: 'text-[#ffe5dc]' },
+              { label: 'Черновики (AI)', value: stats.draft, color: 'text-[#e9f6ff]', bg: 'bg-[#3f7280]', labelColor: 'text-[#d7edf6]' },
             ].map(s => (
-              <div key={s.label} className="card p-4">
+              <div key={s.label} className={`card p-4 border-0 ${s.bg}`}>
                 <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
-                <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+                <div className={`text-xs mt-1 ${s.labelColor}`}>{s.label}</div>
               </div>
             ))}
           </div>
 
-          <div className="card p-5 bg-gradient-to-br from-sky-50 via-cyan-50 to-emerald-50 border-sky-100">
-            <div className="text-xs uppercase tracking-wide text-sky-700 font-semibold mb-2">Vacation vibe</div>
+          <div className="card p-5 bg-gradient-to-br from-[#2f3438] via-[#3a4449] to-[#31373c] border-[#4a545b]">
+            <div className="text-xs uppercase tracking-wide text-[#c3ced8] font-semibold mb-2">Vacation vibe</div>
             <div className="text-4xl mb-3">🏝️</div>
-            <div className="text-sm font-semibold text-slate-800 mb-2">График в балансе</div>
-            <p className="text-xs text-slate-600 leading-relaxed mb-3">
+            <div className="text-sm font-semibold text-[#f2f7fb] mb-2">График в балансе</div>
+            <p className="text-xs text-[#d5dde4] leading-relaxed mb-3">
               Чем меньше конфликтов и больше утверждённых отпусков, тем спокойнее сезон и команда.
             </p>
-            <div className="text-xs text-slate-500">☀️ Планируем заранее • 🤝 Согласуем прозрачно</div>
+            <div className="text-xs text-[#aab5bf]">☀️ Планируем заранее • 🤝 Согласуем прозрачно</div>
           </div>
         </div>
       )}
 
-      <div className="relative overflow-hidden rounded-2xl border border-cyan-100 bg-gradient-to-r from-cyan-100 via-sky-100 to-blue-100 p-4 sm:p-5">
+      <div className="relative overflow-hidden rounded-2xl border border-[#4f5861] bg-gradient-to-r from-[#32383d] via-[#2f4f59] to-[#2f3b45] p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-wide text-cyan-700 font-semibold">Sea mode</div>
-            <div className="text-sm font-medium text-slate-700">Море спокойствия для планирования отпусков</div>
+            <div className="text-xs uppercase tracking-wide text-[#9fd6e3] font-semibold">Sea mode</div>
+            <div className="text-sm font-medium text-[#e5f2f6]">Море спокойствия для планирования отпусков</div>
           </div>
           <div className="text-2xl sm:text-3xl">🌊</div>
         </div>
-        <div className="mt-3 text-cyan-700/80 text-lg leading-none select-none" aria-hidden>
+        <div className="mt-3 text-[#8ec5d4] text-lg leading-none select-none" aria-hidden>
           ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
         </div>
       </div>
