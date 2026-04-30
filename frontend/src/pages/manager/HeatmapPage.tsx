@@ -83,33 +83,50 @@ export default function HeatmapPage() {
   const cellText = { ok: 'text-green-900', warn: 'text-yellow-900', danger: 'text-white' }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Тепловая карта покрытия {YEAR}</h1>
-
-      <div className="flex gap-4 mb-4 text-xs">
-        <span className="badge bg-green-100 text-green-800">Норма (&ge;100%)</span>
-        <span className="badge bg-yellow-100 text-yellow-800">На грани (80–99%)</span>
-        <span className="badge bg-red-100 text-red-800">Дефицит (&lt;80%)</span>
+    <div className="text-slate-100">
+      <div className="text-center mb-4">
+        <div className="inline-flex items-center gap-2 rounded-full bg-[#2f3438] border border-[#4a5258] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#cbd5df] mb-2">
+          <span>Manager view</span>
+          <span>•</span>
+          <span>{YEAR}</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-[#5db3be] via-[#e09a18] to-[#d64a35] bg-clip-text text-transparent drop-shadow-sm">
+          Тепловая карта покрытия {YEAR}
+        </h1>
       </div>
 
-      <div className="card overflow-auto">
+      <div className="card p-3 mb-4 flex gap-4 text-xs flex-wrap bg-[#2f3438] border-[#4a545b]">
+        <span className="badge bg-[#335543] text-[#cbf4da]">Норма (&ge;100%)</span>
+        <span className="badge bg-[#5c4a2f] text-[#ffe3b0]">На грани (80–99%)</span>
+        <span className="badge bg-[#5b3136] text-[#ffd2d6]">Дефицит (&lt;80%)</span>
+      </div>
+
+      <div className="card overflow-auto bg-[#2f3438] border-[#4a545b]">
         <table className="text-xs border-collapse w-full">
           <thead>
             <tr>
-              <th className="sticky left-0 bg-gray-50 px-3 py-2 text-left font-medium text-gray-600 border-r border-gray-200">
+              <th className="sticky left-0 bg-[#3a4248] px-3 py-2 text-left font-medium text-[#c8d2dc] border-r border-[#4f5962]">
+                Цех
+              </th>
+              <th colSpan={WEEKS.length} className="px-3 py-1 text-center text-[11px] uppercase tracking-wide text-[#9fd6e3] bg-[#3a4248]">
+                Недели года (1–52)
+              </th>
+            </tr>
+            <tr>
+              <th className="sticky left-0 bg-[#3a4248] px-3 py-2 text-left font-medium text-[#c8d2dc] border-r border-[#4f5962]">
                 Цех
               </th>
               {WEEKS.map(w => (
-                <th key={w} className="px-1 py-2 text-center text-gray-400 font-normal min-w-[28px]">
+                <th key={w} className="px-1 py-2 text-center text-[#a8b3be] font-normal min-w-[28px] bg-[#3a4248]">
                   {w}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {workshops.map(ws => (
-              <tr key={ws.id} className="border-t border-gray-100">
-                <td className="sticky left-0 bg-white px-3 py-2 font-medium text-gray-700 border-r border-gray-200 whitespace-nowrap">
+            {workshops.map((ws, idx) => (
+              <tr key={ws.id} className="border-t border-[#434c54]">
+                <td className={`sticky left-0 px-3 py-2 font-medium text-[#d8e1ea] border-r border-[#4f5962] whitespace-nowrap ${idx % 2 ? 'bg-[#353d43]' : 'bg-[#3f484e]'}`}>
                   {ws.name}
                 </td>
                 {WEEKS.map(w => {
