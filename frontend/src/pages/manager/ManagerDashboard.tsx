@@ -83,20 +83,32 @@ export default function ManagerDashboard() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {[
-            { label: 'Всего сотрудников', value: stats.total_employees, color: 'text-gray-900' },
-            { label: 'Утверждено', value: stats.approved, color: 'text-green-600' },
-            { label: 'Черновики (AI)', value: stats.draft, color: 'text-blue-600' },
-            { label: 'Конфликты', value: stats.conflict, color: 'text-red-600' },
-            { label: 'Изменено менеджером', value: stats.modified, color: 'text-orange-600' },
-            { label: 'Без пожеланий', value: stats.without_wishes, color: 'text-gray-400' },
-          ].map(s => (
-            <div key={s.label} className="card p-4">
-              <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-gray-500 mt-1">{s.label}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+          <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {[
+              { label: 'Всего сотрудников', value: stats.total_employees, color: 'text-gray-900' },
+              { label: 'Без пожеланий', value: stats.without_wishes, color: 'text-gray-400' },
+              { label: 'Изменено менеджером', value: stats.modified, color: 'text-orange-600' },
+              { label: 'Утверждено', value: stats.approved, color: 'text-green-600' },
+              { label: 'Конфликты', value: stats.conflict, color: 'text-red-600' },
+              { label: 'Черновики (AI)', value: stats.draft, color: 'text-blue-600' },
+            ].map(s => (
+              <div key={s.label} className="card p-4">
+                <div className={`text-3xl font-bold ${s.color}`}>{s.value}</div>
+                <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="card p-5 bg-gradient-to-br from-sky-50 via-cyan-50 to-emerald-50 border-sky-100">
+            <div className="text-xs uppercase tracking-wide text-sky-700 font-semibold mb-2">Vacation vibe</div>
+            <div className="text-4xl mb-3">🏝️</div>
+            <div className="text-sm font-semibold text-slate-800 mb-2">График в балансе</div>
+            <p className="text-xs text-slate-600 leading-relaxed mb-3">
+              Чем меньше конфликтов и больше утверждённых отпусков, тем спокойнее сезон и команда.
+            </p>
+            <div className="text-xs text-slate-500">☀️ Планируем заранее • 🤝 Согласуем прозрачно</div>
+          </div>
         </div>
       )}
     </div>
