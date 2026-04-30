@@ -40,9 +40,18 @@ export default function ManagerDashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Дашборд {YEAR}</h1>
-        <div className="flex items-center gap-2">
+      <div className="mb-6">
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 border border-sky-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 mb-2">
+            <span>Manager view</span>
+            <span>•</span>
+            <span>{YEAR}</span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-sky-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm">
+            Дашборд {YEAR}
+          </h1>
+        </div>
+        <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
           <button
             className="btn-primary"
             onClick={() => generate.mutate()}
