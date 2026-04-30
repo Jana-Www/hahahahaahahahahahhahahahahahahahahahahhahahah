@@ -111,6 +111,19 @@ export default function ManagerDashboard() {
           </div>
         </div>
       )}
+
+      <div className="relative overflow-hidden rounded-2xl border border-cyan-100 bg-gradient-to-r from-cyan-100 via-sky-100 to-blue-100 p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-wide text-cyan-700 font-semibold">Sea mode</div>
+            <div className="text-sm font-medium text-slate-700">Море спокойствия для планирования отпусков</div>
+          </div>
+          <div className="text-2xl sm:text-3xl">🌊</div>
+        </div>
+        <div className="mt-3 text-cyan-700/80 text-lg leading-none select-none" aria-hidden>
+          ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+        </div>
+      </div>
     </div>
   )
 }
