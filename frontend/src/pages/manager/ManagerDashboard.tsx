@@ -88,9 +88,9 @@ export default function ManagerDashboard() {
             { label: 'Всего сотрудников', value: stats.total_employees, color: 'text-gray-900' },
             { label: 'Утверждено', value: stats.approved, color: 'text-green-600' },
             { label: 'На рассмотрении', value: stats.pending, color: 'text-yellow-600' },
-            { label: 'Черновики AI', value: stats.draft, color: 'text-blue-600' },
+            { label: 'Черновики (AI)', value: stats.draft, color: 'text-blue-600' },
             { label: 'Конфликты', value: stats.conflict, color: 'text-red-600' },
-            { label: 'Изменено', value: stats.modified, color: 'text-orange-600' },
+            { label: 'Изменено менеджером', value: stats.modified, color: 'text-orange-600' },
             { label: 'Без пожеланий', value: stats.without_wishes, color: 'text-gray-400' },
           ].map(s => (
             <div key={s.label} className="card p-4">
