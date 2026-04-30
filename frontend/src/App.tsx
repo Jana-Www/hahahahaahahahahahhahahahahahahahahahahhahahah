@@ -36,6 +36,7 @@ const ApprovalPage = lazy(() => import('./pages/manager/ApprovalPage'))
 const ConflictsPage = lazy(() => import('./pages/manager/ConflictsPage'))
 const AdminPage = lazy(() => import('./pages/manager/AdminPage'))
 const CalendarPage = lazy(() => import('./pages/manager/CalendarPage'))
+const HelpPage = lazy(() => import('./pages/manager/HelpPage'))
 
 function Loading() {
   return (
@@ -82,6 +83,9 @@ export default function App() {
           } />
           <Route path="/manager/calendar" element={
             <ProtectedRoute role="MANAGER"><CalendarPage /></ProtectedRoute>
+          } />
+          <Route path="/manager/help" element={
+            <ProtectedRoute role="MANAGER"><HelpPage /></ProtectedRoute>
           } />
 
           <Route path="*" element={<Navigate to="/login" replace />} />
