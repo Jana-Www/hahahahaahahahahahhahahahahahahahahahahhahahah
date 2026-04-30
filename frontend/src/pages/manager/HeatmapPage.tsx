@@ -147,6 +147,43 @@ export default function HeatmapPage() {
           </tbody>
         </table>
       </div>
+
+      <div className="card mt-4 p-4 bg-[#2f3438] border-[#4a545b]">
+        <div className="text-xs uppercase tracking-wide text-[#9fd6e3] font-semibold mb-3">Инструкция по чтению тепловой карты</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div className="rounded-lg bg-[#3a4248] border border-[#4f5962] p-3">
+            <div className="font-semibold text-[#e7f0f7] mb-1">1) Заголовок и период</div>
+            <p className="text-[#b9c4ce] leading-relaxed">
+              Вверху указан год, по которому построена карта. Все значения в таблице относятся только к выбранному году.
+            </p>
+          </div>
+          <div className="rounded-lg bg-[#3a4248] border border-[#4f5962] p-3">
+            <div className="font-semibold text-[#e7f0f7] mb-1">2) Легенда цветов</div>
+            <p className="text-[#b9c4ce] leading-relaxed">
+              Зелёный — норма покрытия, жёлтый — риск, красный — дефицит персонала. Цвет показывает уровень отклонения от минимальной нормы.
+            </p>
+          </div>
+          <div className="rounded-lg bg-[#3a4248] border border-[#4f5962] p-3">
+            <div className="font-semibold text-[#e7f0f7] mb-1">3) Оси таблицы</div>
+            <p className="text-[#b9c4ce] leading-relaxed">
+              Строки — цеха. Колонки с числами 1–52 — недели года. Пересечение строки и колонки — состояние покрытия в конкретной неделе.
+            </p>
+          </div>
+          <div className="rounded-lg bg-[#3a4248] border border-[#4f5962] p-3">
+            <div className="font-semibold text-[#e7f0f7] mb-1">4) Числа в жёлтых/красных ячейках</div>
+            <p className="text-[#b9c4ce] leading-relaxed">
+              Это количество сотрудников, которые присутствуют в цехе в эту неделю. На зелёных ячейках число скрыто, чтобы не перегружать экран.
+            </p>
+          </div>
+          <div className="rounded-lg bg-[#3a4248] border border-[#4f5962] p-3 md:col-span-2">
+            <div className="font-semibold text-[#e7f0f7] mb-1">5) Подсказка при наведении</div>
+            <p className="text-[#b9c4ce] leading-relaxed">
+              Наведи курсор на ячейку: увидишь неделю, название цеха и формат <span className="text-[#e7f0f7] font-medium">Присутствует: X / minTotal</span>,
+              где <span className="text-[#e7f0f7] font-medium">X</span> — фактическое покрытие, а <span className="text-[#e7f0f7] font-medium">minTotal</span> — минимальная норма.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
