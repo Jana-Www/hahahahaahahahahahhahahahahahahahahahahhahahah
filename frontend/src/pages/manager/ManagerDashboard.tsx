@@ -87,7 +87,6 @@ export default function ManagerDashboard() {
           {[
             { label: 'Всего сотрудников', value: stats.total_employees, color: 'text-gray-900' },
             { label: 'Утверждено', value: stats.approved, color: 'text-green-600' },
-            { label: 'На рассмотрении', value: stats.pending, color: 'text-yellow-600' },
             { label: 'Черновики (AI)', value: stats.draft, color: 'text-blue-600' },
             { label: 'Конфликты', value: stats.conflict, color: 'text-red-600' },
             { label: 'Изменено менеджером', value: stats.modified, color: 'text-orange-600' },
